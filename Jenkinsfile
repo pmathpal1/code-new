@@ -19,7 +19,6 @@ pipeline {
 
         stage('Set Azure Credentials') {
             steps {
-<<<<<<< HEAD
                 withCredentials([
                     string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
                     string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
@@ -32,16 +31,6 @@ pipeline {
                         echo "Tenant ID: $ARM_TENANT_ID"
                         echo "Subscription ID: $ARM_SUBSCRIPTION_ID"
                     '''
-=======
-                withCredentials([string(credentialsId: 'jenkins-terraform-spp-2', variable: 'AZURE_CREDENTIALS')]) {
-                    script {
-                        def json = readJSON text: env.AZURE_CREDENTIALS
-                        env.ARM_CLIENT_ID       = json.clientId
-                        env.ARM_CLIENT_SECRET   = json.clientSecret
-                        env.ARM_SUBSCRIPTION_ID = json.subscriptionId
-                        env.ARM_TENANT_ID       = json.tenantId
-                    }
->>>>>>> 668479b88e712ba401e3acdda34ddd753e11f00c
                 }
             }
         }
