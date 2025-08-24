@@ -1,9 +1,9 @@
 pipeline {
     agent {
         docker {
-            // Use alpine-based image that has terraform + /bin/sh
             image 'hashicorp/terraform:1.13.0'
-            args '-v /var/jenkins_home/terraform:/terraform'
+            // Override entrypoint to allow shell commands
+            args '--entrypoint=/bin/sh -v /var/jenkins_home/terraform:/terraform'
         }
     }
 
