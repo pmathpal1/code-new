@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'hashicorp/terraform:1.13.0'
+            args '--entrypoint=""'
+        }
+    }
+}
+    environment {
+        ARM_SKIP_PROVIDER_REGISTRATION = "true"  // avoid auto provider reg (faster)
+    }
+
+    stages {
+        stage('Debug') {
+            steps {
+                sh 'echo "Inside Terraform container..."'
+                sh 'terraform version'
+                sh 'ls -la'
+            }
+        }
+
 
 
     environment {
