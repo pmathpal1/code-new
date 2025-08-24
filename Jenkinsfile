@@ -1,8 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:1.13.0'   // full image with sh
-            args '-v /var/jenkins_home/terraform:/terraform'
+            image 'hashicorp/terraform:1.13.0@sha256:5f2a3f1a42f5e...' // full variant with shell
         }
     }
 
