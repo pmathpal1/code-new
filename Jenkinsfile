@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Set Azure Credentials') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-terraform-spp', variable: 'AZURE_CREDENTIALS')]) {
+                withCredentials([string(credentialsId: 'jenkins-terraform-spp-2', variable: 'AZURE_CREDENTIALS')]) {
                     script {
                         def json = readJSON text: env.AZURE_CREDENTIALS
                         env.ARM_CLIENT_ID       = json.clientId
