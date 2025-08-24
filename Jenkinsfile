@@ -5,7 +5,7 @@ pipeline {
             args '--entrypoint=""'
         }
     }
-}
+
     environment {
         ARM_SKIP_PROVIDER_REGISTRATION = "true"  // avoid auto provider reg (faster)
     }
@@ -19,50 +19,42 @@ pipeline {
             }
         }
 
-
-
-    environment {
-        ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
-        ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
-        ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
-        ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
-        AZURE_LOCATION      = "East US"
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
-            }
-        }
-
-        stage('Verify Credentials') {
-            steps {
-                sh '''
-                    echo "✅ Azure credentials loaded successfully"
-                    echo "Client ID: $ARM_CLIENT_ID"
-                    echo "Tenant ID: $ARM_TENANT_ID"
-                    echo "Subscription ID: $ARM_SUBSCRIPTION_ID"
-                '''
-            }
-        }
-
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                withCredentials([
+                    string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
+                    string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
+                    string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
+                    string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID')
+                ]) {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                withCredentials([
+                    string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
+                    string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
+                    string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
+                    string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID')
+                ]) {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                input message: 'Approve to apply changes?', ok: 'Deploy'
-                sh 'terraform apply -auto-approve tfplan'
+                withCredentials([
+                    string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
+                    string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
+                    string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
+                    string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID')
+                ]) {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
             }
         }
     }
