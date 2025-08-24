@@ -2,9 +2,11 @@ pipeline {
     agent {
         docker {
             image 'hashicorp/terraform:light'
-            args '-v /var/jenkins_home/terraform:/terraform'
+            args '--entrypoint=""'
         }
     }
+    ...
+}
 
 
     environment {
