@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'git@github.com:pmathpal1/terraform-azure-infra.git'
+                git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git	'
             }
         }
 
