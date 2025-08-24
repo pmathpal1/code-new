@@ -1,9 +1,10 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:1.13.0@sha256:5f2a3f1a42f5e...' // full variant with shell
+            image 'alpine/terraform:1.13.0'
         }
     }
+
 
     environment {
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
