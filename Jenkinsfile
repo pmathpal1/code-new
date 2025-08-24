@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:latest'
+            image 'hashicorp/terraform:light'
             args '-v /var/jenkins_home/terraform:/terraform'
         }
     }
