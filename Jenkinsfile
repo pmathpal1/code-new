@@ -1,14 +1,10 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:latest'
+            // Use alpine-based image that has terraform + /bin/sh
+            image 'hashicorp/terraform:1.13.0'
             args '-v /var/jenkins_home/terraform:/terraform'
-            reuseNode true
         }
-    }
-
-    options {
-        shell('/bin/sh')   // explicitly tell Jenkins to use /bin/sh
     }
 
     environment {
@@ -26,14 +22,13 @@ pipeline {
             }
         }
 
-        stage('Debug Environment') {
+        stage('Verify Credentials') {
             steps {
                 sh '''
-                    echo "🔍 Debugging container environment..."
-                    which terraform || echo "terraform not found"
-                    terraform version || echo "terraform failed"
-                    pwd
-                    ls -la
+                    echo "✅ Azure credentials loaded successfully"
+                    echo "Client ID: $ARM_CLIENT_ID"
+                    echo "Tenant ID: $ARM_TENANT_ID"
+                    echo "Subscription ID: $ARM_SUBSCRIPTION_ID"
                 '''
             }
         }
