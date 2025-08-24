@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'hashicorp/terraform:latest'   // use full image (has /bin/sh)
-            args '-v /var/jenkins_home/terraform:/terraform'
+            args '-v /var/jenkins_home/terraform:/terraform --entrypoint=""'
         }
     }
 
