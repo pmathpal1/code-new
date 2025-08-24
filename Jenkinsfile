@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:latest'   // use full image (has /bin/sh)
-            args '-v /var/jenkins_home/terraform:/terraform --entrypoint=""'
+            image 'hashicorp/terraform:latest'
+            args '-v /var/jenkins_home/terraform:/terraform'
         }
     }
 
@@ -21,6 +21,23 @@ pipeline {
             }
         }
 
+        stage('Debug Environment') {
+            steps {
+                sh '''
+                    echo "🔍 Debugging container environment..."
+                    echo "PATH: $PATH"
+                    which terraform || echo "terraform not found in PATH"
+                    terraform version || echo "terraform command failed"
+                    
+                    echo "📂 Current working directory:"
+                    pwd
+
+                    echo "📂 Listing files:"
+                    ls -la
+                '''
+            }
+        }
+
         stage('Verify Credentials') {
             steps {
                 sh '''
@@ -34,20 +51,44 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                sh '''
+                    echo "Running Terraform Init..."
+                    if terraform init; then
+                        echo "Terraform init succeeded ✅"
+                    else
+                        echo "⚠️ terraform init failed, trying fallback..."
+                        terraform terraform init || (echo "❌ Both init attempts failed" && exit 1)
+                    fi
+                '''
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                sh '''
+                    echo "Running Terraform Plan..."
+                    if terraform plan -out=tfplan; then
+                        echo "Terraform plan succeeded ✅"
+                    else
+                        echo "❌ Terraform plan failed"
+                        exit 1
+                    fi
+                '''
             }
         }
 
         stage('Terraform Apply') {
             steps {
                 input 'Approve to apply changes?'
-                sh 'terraform apply -auto-approve tfplan'
+                sh '''
+                    echo "Running Terraform Apply..."
+                    if terraform apply -auto-approve tfplan; then
+                        echo "Terraform apply succeeded ✅"
+                    else
+                        echo "❌ Terraform apply failed"
+                        exit 1
+                    fi
+                '''
             }
         }
     }
