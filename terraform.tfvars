@@ -5,7 +5,7 @@ location = "East US"
 vnet = [
   { name = "hub-vnet", address_space = "10.0.0.0/16" },
   { name = "spoke1-vnet", address_space = "20.0.0.0/16" },
-  { name = "spoke2-vnet", address_space = "30.0.0.0/16" }
+  { name = "spoke2-vnet", address_space = "30.0.0.0/16" },
   { name = "spoke3-vnet", address_space = "40.0.0.0/16" }
 ]
 
