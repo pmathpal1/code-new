@@ -1,12 +1,15 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'LOCATION', defaultValue: 'eastus', description: 'Azure region')
+    }
+
     environment {
         ARM_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
         ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
         ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
-        LOCATION            = 'eastus'
     }
 
     stages {
@@ -40,7 +43,7 @@ pipeline {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                        sh "terraform plan -var='location=${LOCATION}'"
+                        sh "terraform plan -var=\"location=${params.LOCATION}\""
                     }
                 }
             }
@@ -51,7 +54,7 @@ pipeline {
                 input 'Approve Terraform Apply?'
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                        sh "terraform apply -var='location=${LOCATION}' -auto-approve"
+                        sh "terraform apply -var=\"location=${params.LOCATION}\" -auto-approve"
                     }
                 }
             }
