@@ -23,6 +23,12 @@ pipeline {
             }
         }
 
+        stage('Debug Params') {
+            steps {
+                echo "DESTROY parameter is: ${params.DESTROY}"
+            }
+        }
+
         stage('Terraform Init (Local)') {
             steps {
                 withEnv([
@@ -135,6 +141,15 @@ pipeline {
             }
         }
 
+        stage('Confirm Destroy') {
+            when {
+                expression { params.DESTROY == true }
+            }
+            steps {
+                input message: 'Are you sure you want to destroy the infrastructure?', ok: 'Destroy'
+            }
+        }
+
         stage('Terraform Destroy (Optional)') {
             when {
                 expression { params.DESTROY == true }
@@ -149,18 +164,11 @@ pipeline {
                     script {
                         docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform init \\
-                                  -backend-config="resource_group_name=${params.RG_NAME}" \\
-                                  -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \\
-                                  -backend-config="container_name=${params.CONTAINER_NAME}" \\
-                                  -backend-config="key=terraform.tfstate" \\
-                                  -force-copy
-
-                                terraform destroy \\
-                                  -var="location=${params.LOCATION}" \\
-                                  -var="rg_name=${params.RG_NAME}" \\
-                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \\
-                                  -var="container_name=${params.CONTAINER_NAME}" \\
+                                terraform destroy \
+                                  -var="location=${params.LOCATION}" \
+                                  -var="rg_name=${params.RG_NAME}" \
+                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -var="container_name=${params.CONTAINER_NAME}" \
                                   -auto-approve
                             """
                         }
