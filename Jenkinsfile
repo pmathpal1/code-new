@@ -16,57 +16,39 @@ pipeline {
             }
         }
 
-        stage('List Files for Debugging') {
-            agent {
-                docker {
-                    image 'alpine:latest'
-                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
-                }
-            }
-            steps {
-                sh "ls -la ${env.WORKSPACE}"
-            }
-        }
-
         stage('Terraform Init') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:latest'
-                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
-                }
-            }
             steps {
                 dir("${env.WORKSPACE}") {
-                    sh 'terraform init'
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh 'terraform init'
+                        }
+                    }
                 }
             }
         }
 
         stage('Terraform Plan') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:latest'
-                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
-                }
-            }
             steps {
                 dir("${env.WORKSPACE}") {
-                    sh "terraform plan -var='location=${LOCATION}'"
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh "terraform plan -var='location=${LOCATION}'"
+                        }
+                    }
                 }
             }
         }
 
         stage('Terraform Apply') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:latest'
-                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
-                }
-            }
             steps {
-                input 'Approve Terraform Apply?'
+                input message: 'Approve Terraform Apply?'
                 dir("${env.WORKSPACE}") {
-                    sh "terraform apply -var='location=${LOCATION}' -auto-approve"
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh "terraform apply -var='location=${LOCATION}' -auto-approve"
+                        }
+                    }
                 }
             }
         }
