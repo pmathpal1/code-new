@@ -14,12 +14,12 @@ pipeline {
         LOCATION            = 'eastus'  // ✅ Fixed: removed invalid dot
     }
 
-    stages {
-        stage('Clone GitHub Repo') {
-            steps {
-                git 'git@github.com:pmathpal1/code-new.git'
-            }
-        }
+     stage('Clone GitHub Repo') {
+        steps {
+           git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
+    }
+}
+
 
         stage('Terraform Init') {
             steps {
