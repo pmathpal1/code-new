@@ -31,9 +31,16 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                        sh 'terraform init'
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                            sh 'terraform init'
+                        }
                     }
                 }
             }
@@ -41,9 +48,16 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                        sh "terraform plan -var=\"location=${params.LOCATION}\""
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                            sh "terraform plan -var=\"location=${params.LOCATION}\""
+                        }
                     }
                 }
             }
@@ -52,13 +66,19 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 input 'Approve Terraform Apply?'
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                        sh "terraform apply -var=\"location=${params.LOCATION}\" -auto-approve"
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                            sh "terraform apply -var=\"location=${params.LOCATION}\" -auto-approve"
+                        }
                     }
                 }
             }
         }
     }
 }
-// this is change made auto
