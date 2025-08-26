@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Test Terraform Docker') {
+        stage('Test Terraform Container') {
             agent {
                 docker {
                     image 'hashicorp/terraform:latest'
@@ -10,7 +10,6 @@ pipeline {
             }
             steps {
                 sh 'terraform version'
-                sh 'ls -la'
                 sh 'sleep 10'  // keep container alive briefly for debugging
             }
         }
