@@ -30,9 +30,10 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    docker.image('hashicorp/terraform:latest').inside {
-                        // Initialize with local backend first
-                        sh 'terraform init -backend=false'
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh 'terraform init -backend=false'
+                        }
                     }
                 }
             }
@@ -46,15 +47,17 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    docker.image('hashicorp/terraform:latest').inside {
-                        sh """
-                            terraform apply \
-                              -var="location=${params.LOCATION}" \
-                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
-                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                              -var="container_name=${params.CONTAINER_NAME}" \
-                              -auto-approve
-                        """
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh """
+                                terraform apply \
+                                  -var="location=${params.LOCATION}" \
+                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -var="container_name=${params.CONTAINER_NAME}" \
+                                  -auto-approve
+                            """
+                        }
                     }
                 }
             }
@@ -68,15 +71,17 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    docker.image('hashicorp/terraform:latest').inside {
-                        sh """
-                            terraform init \
-                              -backend-config="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
-                              -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                              -backend-config="container_name=${params.CONTAINER_NAME}" \
-                              -backend-config="key=terraform.tfstate" \
-                              -force-copy
-                        """
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh """
+                                terraform init \
+                                  -backend-config="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -backend-config="container_name=${params.CONTAINER_NAME}" \
+                                  -backend-config="key=terraform.tfstate" \
+                                  -force-copy
+                            """
+                        }
                     }
                 }
             }
@@ -90,14 +95,16 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    docker.image('hashicorp/terraform:latest').inside {
-                        sh """
-                            terraform plan \
-                              -var="location=${params.LOCATION}" \
-                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
-                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                              -var="container_name=${params.CONTAINER_NAME}"
-                        """
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh """
+                                terraform plan \
+                                  -var="location=${params.LOCATION}" \
+                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -var="container_name=${params.CONTAINER_NAME}"
+                            """
+                        }
                     }
                 }
             }
@@ -111,15 +118,17 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    docker.image('hashicorp/terraform:latest').inside {
-                        sh """
-                            terraform apply \
-                              -var="location=${params.LOCATION}" \
-                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
-                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                              -var="container_name=${params.CONTAINER_NAME}" \
-                              -auto-approve
-                        """
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh """
+                                terraform apply \
+                                  -var="location=${params.LOCATION}" \
+                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -var="container_name=${params.CONTAINER_NAME}" \
+                                  -auto-approve
+                            """
+                        }
                     }
                 }
             }
