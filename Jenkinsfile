@@ -5,15 +5,13 @@ pipeline {
             args '-v /var/jenkins_home/terraform:/terraform'   // Mount volume to persist state
         }
     }
-    environment {
-    ARM_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
-    ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
-    ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
-    ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
-  }
 
     environment {
-        AZURE_LOCATION = "East US"
+        ARM_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
+        ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
+        ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+        ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
+        LOCATION            = 'eastus'  // ✅ Fixed: removed invalid dot
     }
 
     stages {
@@ -25,22 +23,21 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'  // Initializes Terraform
+                sh 'terraform init'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan'  // Generates an execution plan
+                sh 'terraform plan -var="location=$LOCATION"'
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                input 'Approve to apply changes'  // Pause for manual approval before applying changes
-                sh 'terraform apply -auto-approve'  // Apply the configuration automatically
+                input 'Approve to apply changes'
+                sh 'terraform apply -var="location=$LOCATION" -auto-approve'
             }
         }
     }
 }
-// this is the comment
