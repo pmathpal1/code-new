@@ -31,7 +31,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh 'terraform init -backend=false'
                         }
                     }
@@ -48,7 +48,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
@@ -72,7 +72,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
                                 terraform init \
                                   -backend-config="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
@@ -96,7 +96,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
                                 terraform plan \
                                   -var="location=${params.LOCATION}" \
@@ -119,7 +119,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
