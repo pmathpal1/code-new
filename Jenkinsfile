@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Clone GitHub Repo') {
             steps {
-                git 'git@github.com:pmathpal1/repo121.git'
+                git 'git@github.com:pmathpal1/code-new.git'
             }
         }
 
