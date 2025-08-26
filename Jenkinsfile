@@ -16,13 +16,21 @@ pipeline {
             }
         }
 
+        stage('List Files for Debugging') {
+            steps {
+                script {
+                    docker.image('alpine:latest').inside('--entrypoint=') {
+                        sh 'ls -la'
+                    }
+                }
+            }
+        }
+
         stage('Terraform Init') {
             steps {
-                dir("${env.WORKSPACE}") {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside {
-                            sh 'terraform init'
-                        }
+                script {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh 'terraform init'
                     }
                 }
             }
@@ -30,11 +38,9 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir("${env.WORKSPACE}") {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside {
-                            sh "terraform plan -var='location=${LOCATION}'"
-                        }
+                script {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh "terraform plan -var='location=${LOCATION}'"
                     }
                 }
             }
@@ -42,12 +48,10 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                input message: 'Approve Terraform Apply?'
-                dir("${env.WORKSPACE}") {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside {
-                            sh "terraform apply -var='location=${LOCATION}' -auto-approve"
-                        }
+                input 'Approve Terraform Apply?'
+                script {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh "terraform apply -var='location=${LOCATION}' -auto-approve"
                     }
                 }
             }
