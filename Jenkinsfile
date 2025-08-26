@@ -1,15 +1,73 @@
 pipeline {
-    agent {
-        docker {
-            image 'alpine:latest'
-            args '-v ${env.WORKSPACE}:${env.WORKSPACE}'
-        }
+    agent any
+
+    environment {
+        ARM_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
+        ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
+        ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+        ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
+        LOCATION            = 'eastus'
     }
+
     stages {
-        stage('Test Docker') {
+        stage('Checkout Code') {
             steps {
-                sh 'echo "Hello from inside the container!"'
-                sh 'ls -la ${WORKSPACE}'
+                git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
+            }
+        }
+
+        stage('List Files for Debugging') {
+            agent {
+                docker {
+                    image 'alpine:latest'
+                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
+                }
+            }
+            steps {
+                sh "ls -la ${env.WORKSPACE}"
+            }
+        }
+
+        stage('Terraform Init') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
+                }
+            }
+            steps {
+                dir("${env.WORKSPACE}") {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
+                }
+            }
+            steps {
+                dir("${env.WORKSPACE}") {
+                    sh "terraform plan -var='location=${LOCATION}'"
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
+                }
+            }
+            steps {
+                input 'Approve Terraform Apply?'
+                dir("${env.WORKSPACE}") {
+                    sh "terraform apply -var='location=${LOCATION}' -auto-approve"
+                }
             }
         }
     }
