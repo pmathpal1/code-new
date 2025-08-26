@@ -52,7 +52,7 @@ pipeline {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
-                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}" \
                                   -auto-approve
@@ -75,7 +75,7 @@ pipeline {
                         docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
                                 terraform init \
-                                  -backend-config="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -backend-config="resource_group_name=${params.RG_NAME}" \
                                   -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -backend-config="container_name=${params.CONTAINER_NAME}" \
                                   -backend-config="key=terraform.tfstate" \
@@ -100,7 +100,7 @@ pipeline {
                             sh """
                                 terraform plan \
                                   -var="location=${params.LOCATION}" \
-                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}"
                             """
@@ -123,7 +123,7 @@ pipeline {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
-                                  -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                                  -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}" \
                                   -auto-approve
