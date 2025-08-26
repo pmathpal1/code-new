@@ -1,16 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'alpine:latest'
+            args '-v ${env.WORKSPACE}:${env.WORKSPACE}'
+        }
+    }
     stages {
-        stage('Test Terraform Container') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:latest'
-                    args "-v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE}"
-                }
-            }
+        stage('Test Docker') {
             steps {
-                sh 'terraform version'
-                sh 'sleep 10'  // keep container alive briefly for debugging
+                sh 'echo "Hello from inside the container!"'
+                sh 'ls -la ${WORKSPACE}'
             }
         }
     }
