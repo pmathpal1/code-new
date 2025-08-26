@@ -1,4 +1,4 @@
-rg_name  = "my-resources1"
+rg_name  = "test-rg"
 location = "East US"
 #routetable= ["subnet1-rt","subnet2-rt"]
 
@@ -16,5 +16,3 @@ subnet = [
 
 ]
 
-
-##
