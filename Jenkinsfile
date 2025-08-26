@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'hashicorp/terraform:latest'   // Docker image for Terraform
-            args '-v /var/jenkins_home/terraform:/terraform'   // Mount volume to persist state
+            image 'hashicorp/terraform:latest'
+            args '-v /var/jenkins_home/terraform:/terraform'
         }
     }
 
@@ -11,15 +11,15 @@ pipeline {
         ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
         ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
         ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
-        LOCATION            = 'eastus'  // ✅ Fixed: removed invalid dot
+        LOCATION            = 'eastus'
     }
 
-     stage('Clone GitHub Repo') {
-        steps {
-           git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
-    }
-}
-
+    stages {
+        stage('Clone GitHub Repo') {
+            steps {
+                git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
+            }
+        }
 
         stage('Terraform Init') {
             steps {
@@ -41,3 +41,4 @@ pipeline {
         }
     }
 }
+
