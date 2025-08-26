@@ -65,7 +65,6 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                input 'Approve Terraform Apply?'
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
                     "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
