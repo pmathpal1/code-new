@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name: 'LOCATION', defaultValue: 'eastus', description: 'Azure region')
-        string(name: 'RESOURCE_GROUP_NAME', defaultValue: 'test-rg1', description: 'Azure Resource Group for backend')
+        string(name: 'RG_NAME', defaultValue: 'test-rg1', description: 'Azure Resource Group for backend')
         string(name: 'STORAGE_ACCOUNT_NAME', defaultValue: 'pankajmathpal99001122', description: 'Storage Account for backend')
         string(name: 'CONTAINER_NAME', defaultValue: 'mycon1212', description: 'Container for storing state file')
     }
