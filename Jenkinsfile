@@ -150,7 +150,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Destroy (Optional)') {
+        stage('Terraform Destroy ') {
             when {
                 expression { params.DESTROY == true }
             }
