@@ -1,4 +1,4 @@
-rg_name  = "test-rg"
+rg_name  = "test-rg1"
 location = "East US"
 #routetable= ["subnet1-rt","subnet2-rt"]
 
@@ -17,3 +17,5 @@ subnet = [
 
 ]
 
+storage_account_name      = "pankajmathpal99001122"
+container_name = "mycon1212"

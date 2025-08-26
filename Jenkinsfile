@@ -3,6 +3,9 @@ pipeline {
 
     parameters {
         string(name: 'LOCATION', defaultValue: 'eastus', description: 'Azure region')
+        string(name: 'RESOURCE_GROUP_NAME', defaultValue: 'test-rg1', description: 'Azure Resource Group for backend')
+        string(name: 'STORAGE_ACCOUNT_NAME', defaultValue: 'pankajmathpal99001122', description: 'Storage Account for backend')
+        string(name: 'CONTAINER_NAME', defaultValue: 'mycon1212', description: 'Container for storing state file')
     }
 
     environment {
@@ -19,17 +22,7 @@ pipeline {
             }
         }
 
-        stage('List Files for Debugging') {
-            steps {
-                script {
-                    docker.image('alpine:latest').inside('--entrypoint=') {
-                        sh 'ls -la'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Init') {
+        stage('Terraform Init (Local)') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -37,10 +30,53 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                            sh 'terraform init'
-                        }
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        // Initialize with local backend first
+                        sh 'terraform init -backend=false'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply to Create Backend') {
+            steps {
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh """
+                            terraform apply \
+                              -var="location=${params.LOCATION}" \
+                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}" \
+                              -auto-approve
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Re-init with Remote Backend') {
+            steps {
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh """
+                            terraform init \
+                              -backend-config="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                              -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -backend-config="container_name=${params.CONTAINER_NAME}" \
+                              -backend-config="key=terraform.tfstate" \
+                              -force-copy
+                        """
                     }
                 }
             }
@@ -54,16 +90,20 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                            sh "terraform plan -var=\"location=${params.LOCATION}\""
-                        }
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh """
+                            terraform plan \
+                              -var="location=${params.LOCATION}" \
+                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}"
+                        """
                     }
                 }
             }
         }
 
-        stage('Terraform Apply') {
+        stage('Terraform Apply (Final Infra)') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -71,10 +111,15 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
-                    script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                            sh "terraform apply -var=\"location=${params.LOCATION}\" -auto-approve"
-                        }
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        sh """
+                            terraform apply \
+                              -var="location=${params.LOCATION}" \
+                              -var="resource_group_name=${params.RESOURCE_GROUP_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}" \
+                              -auto-approve
+                        """
                     }
                 }
             }
