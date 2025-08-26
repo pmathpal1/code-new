@@ -9,12 +9,12 @@ pipeline {
         LOCATION            = 'eastus'  // Your desired Azure region
     }
 
-      stage('Checkout Code') {
-        steps {
-           git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
-    }
-}
-
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
+            }
+        }
 
         stage('List Files for Debugging') {
             agent {
