@@ -1,112 +1,64 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
-        ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
-        ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
-        ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
+  environment {
+    // These should be set as Jenkins credentials (Secret Text or similar)
+    ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
+    ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
+    ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
+    ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
+  }
+
+  stages {
+    stage('Debug Env') {
+      steps {
+        // Check if ARM env variables are available
+        sh 'env | grep ARM || echo "ARM vars not set"'
+      }
     }
 
-    parameters {
-        booleanParam(name: 'DESTROY', defaultValue: false, description: 'Destroy infrastructure')
+    stage('Checkout Code') {
+      steps {
+        checkout scm
+      }
     }
 
-    stages {
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
+    stage('Terraform Init') {
+      steps {
+        script {
+          docker.image('hashicorp/terraform:latest').inside {
+            sh 'terraform init'
+          }
         }
-
-        stage('Debug Params') {
-            steps {
-                echo "DESTROY parameter is: ${params.DESTROY}"
-            }
-        }
-
-        stage('Terraform Init (Local)') {
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform init -backend=false'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Apply to Create Backend') {
-            when {
-                expression { !params.DESTROY }
-            }
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform apply -auto-approve -target=azurerm_storage_account.sa -target=azurerm_storage_container.container'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Re-init with Remote Backend') {
-            when {
-                expression { !params.DESTROY }
-            }
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform init'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Plan') {
-            when {
-                expression { !params.DESTROY }
-            }
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform plan -out=tfplan'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Apply (Final Infra)') {
-            when {
-                expression { !params.DESTROY }
-            }
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
-                }
-            }
-        }
-
-        stage('Confirm Destroy') {
-            when {
-                expression { params.DESTROY }
-            }
-            steps {
-                input message: 'Do you want to destroy the infrastructure?', ok: 'Destroy'
-            }
-        }
-
-        stage('Terraform Destroy') {
-            when {
-                expression { params.DESTROY }
-            }
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh 'terraform destroy -auto-approve'
-                    }
-                }
-            }
-        }
+      }
     }
+
+    stage('Terraform Plan') {
+      steps {
+        script {
+          docker.image('hashicorp/terraform:latest').inside {
+            sh 'terraform plan -out=tfplan'
+          }
+        }
+      }
+    }
+
+    stage('Terraform Apply') {
+      steps {
+        input message: 'Approve Terraform Apply?'
+        script {
+          docker.image('hashicorp/terraform:latest').inside {
+            sh 'terraform apply -auto-approve tfplan'
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      echo "Cleaning up workspace"
+      deleteDir()
+    }
+  }
 }
