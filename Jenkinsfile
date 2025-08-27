@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        ARM_TENANT_ID = credentials('AZURE_TENANT_ID')
-        ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
-        ARM_CLIENT_ID = credentials('AZURE_CLIENT_ID')
-        ARM_CLIENT_SECRET = credentials('AZURE_CLIENT_SECRET')
+        ARM_TENANT_ID        = credentials('AZURE_TENANT_ID')
+        ARM_SUBSCRIPTION_ID  = credentials('AZURE_SUBSCRIPTION_ID')
+        ARM_CLIENT_ID        = credentials('AZURE_CLIENT_ID')
+        ARM_CLIENT_SECRET    = credentials('AZURE_CLIENT_SECRET')
     }
 
     parameters {
@@ -26,34 +26,34 @@ pipeline {
             }
         }
 
-        stage('Terraform Re-init with Remote Backend') {
+        stage('Terraform Apply Backend Infrastructure') {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                         sh """
-                        terraform init \
-                          -backend-config="resource_group_name=${params.RG_NAME}" \
-                          -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                          -backend-config="container_name=${params.CONTAINER_NAME}" \
-                          -backend-config="key=terraform.tfstate" \
-                          -reconfigure
+                            terraform apply \
+                              -var="location=${params.LOCATION}" \
+                              -var="rg_name=${params.RG_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}" \
+                              -auto-approve
                         """
                     }
                 }
             }
         }
 
-        stage('Terraform Apply Backend Infrastructure') {
+        stage('Terraform Re-init with Remote Backend') {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                         sh """
-                        terraform apply \
-                          -var="location=${params.LOCATION}" \
-                          -var="rg_name=${params.RG_NAME}" \
-                          -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                          -var="container_name=${params.CONTAINER_NAME}" \
-                          -auto-approve
+                            terraform init \
+                              -backend-config="resource_group_name=${params.RG_NAME}" \
+                              -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -backend-config="container_name=${params.CONTAINER_NAME}" \
+                              -backend-config="key=terraform.tfstate" \
+                              -reconfigure
                         """
                     }
                 }
@@ -65,11 +65,11 @@ pipeline {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                         sh """
-                        terraform plan \
-                          -var="location=${params.LOCATION}" \
-                          -var="rg_name=${params.RG_NAME}" \
-                          -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                          -var="container_name=${params.CONTAINER_NAME}"
+                            terraform plan \
+                              -var="location=${params.LOCATION}" \
+                              -var="rg_name=${params.RG_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}"
                         """
                     }
                 }
@@ -81,12 +81,12 @@ pipeline {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                         sh """
-                        terraform apply \
-                          -var="location=${params.LOCATION}" \
-                          -var="rg_name=${params.RG_NAME}" \
-                          -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                          -var="container_name=${params.CONTAINER_NAME}" \
-                          -auto-approve
+                            terraform apply \
+                              -var="location=${params.LOCATION}" \
+                              -var="rg_name=${params.RG_NAME}" \
+                              -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                              -var="container_name=${params.CONTAINER_NAME}" \
+                              -auto-approve
                         """
                     }
                 }
