@@ -19,7 +19,6 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                // Use git clone explicitly or 'checkout scm' if this is multibranch pipeline
                 git branch: 'main', url: 'git@github.com:pmathpal1/code-new.git'
             }
         }
@@ -30,7 +29,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Init (Local)') {
+        stage('Terraform Init (Local, Backend Disabled)') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -39,8 +38,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
-                            // Initialize terraform locally without backend for first-time backend creation
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh 'terraform init -backend=false -input=false'
                         }
                     }
@@ -48,7 +46,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply to Create Backend') {
+        stage('Terraform Apply to Create Backend Resources') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -57,15 +55,15 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
-                            // Apply terraform to create remote backend infrastructure (storage account, container, etc.)
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform apply -input=false \
+                                terraform apply \
                                   -var="location=${params.LOCATION}" \
                                   -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}" \
-                                  -auto-approve
+                                  -auto-approve \
+                                  -input=false
                             """
                         }
                     }
@@ -82,16 +80,14 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
-                            // Reinitialize terraform with the remote backend configuration
-                            // Added -reconfigure and -input=false flags for non-interactive proper backend init
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform init -reconfigure -input=false \
+                                terraform init -reconfigure \
                                   -backend-config="resource_group_name=${params.RG_NAME}" \
                                   -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -backend-config="container_name=${params.CONTAINER_NAME}" \
                                   -backend-config="key=terraform.tfstate" \
-                                  -force-copy
+                                  -input=false
                             """
                         }
                     }
@@ -108,13 +104,14 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform plan -input=false \
+                                terraform plan \
                                   -var="location=${params.LOCATION}" \
                                   -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                                  -var="container_name=${params.CONTAINER_NAME}"
+                                  -var="container_name=${params.CONTAINER_NAME}" \
+                                  -input=false
                             """
                         }
                     }
@@ -122,7 +119,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply (Final Infra)') {
+        stage('Terraform Apply (Final Infrastructure)') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -131,14 +128,15 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform apply -input=false \
+                                terraform apply \
                                   -var="location=${params.LOCATION}" \
                                   -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}" \
-                                  -auto-approve
+                                  -auto-approve \
+                                  -input=false
                             """
                         }
                     }
@@ -167,14 +165,15 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:1.5.7').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
                             sh """
-                                terraform destroy -input=false \
+                                terraform destroy \
                                   -var="location=${params.LOCATION}" \
                                   -var="rg_name=${params.RG_NAME}" \
                                   -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -var="container_name=${params.CONTAINER_NAME}" \
-                                  -auto-approve
+                                  -auto-approve \
+                                  -input=false
                             """
                         }
                     }
