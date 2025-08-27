@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -39,8 +38,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
-                            // Init with backend disabled to create backend infra first
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh 'terraform init -backend=false'
                         }
                     }
@@ -57,7 +55,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
@@ -81,14 +79,14 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh """
                                 terraform init \
                                   -backend-config="resource_group_name=${params.RG_NAME}" \
                                   -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -backend-config="container_name=${params.CONTAINER_NAME}" \
                                   -backend-config="key=terraform.tfstate" \
-                                  -reconfigure
+                                  -force-copy -reconfigure
                             """
                         }
                     }
@@ -105,7 +103,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh """
                                 terraform plan \
                                   -var="location=${params.LOCATION}" \
@@ -128,7 +126,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh """
                                 terraform apply \
                                   -var="location=${params.LOCATION}" \
@@ -164,7 +162,7 @@ pipeline {
                     "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
                 ]) {
                     script {
-                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=') {
+                        docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
                             sh """
                                 terraform destroy \
                                   -var="location=${params.LOCATION}" \
