@@ -23,7 +23,54 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
+        stage('Debug Params') {
+            steps {
+                echo "DESTROY parameter is: ${params.DESTROY}"
+            }
+        }
+
+        stage('Terraform Init (Local)') {
+            steps {
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh 'terraform init -backend=false'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply to Create Backend') {
+            steps {
+                withEnv([
+                    "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${env.ARM_CLIENT_SECRET}",
+                    "ARM_SUBSCRIPTION_ID=${env.ARM_SUBSCRIPTION_ID}",
+                    "ARM_TENANT_ID=${env.ARM_TENANT_ID}"
+                ]) {
+                    script {
+                        docker.image('hashicorp/terraform:latest').inside {
+                            sh """
+                                terraform apply \
+                                  -var="location=${params.LOCATION}" \
+                                  -var="rg_name=${params.RG_NAME}" \
+                                  -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                                  -var="container_name=${params.CONTAINER_NAME}" \
+                                  -auto-approve
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Re-init with Remote Backend') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -38,7 +85,8 @@ pipeline {
                                   -backend-config="resource_group_name=${params.RG_NAME}" \
                                   -backend-config="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
                                   -backend-config="container_name=${params.CONTAINER_NAME}" \
-                                  -backend-config="key=terraform.tfstate"
+                                  -backend-config="key=terraform.tfstate" \
+                                  -force-copy
                             """
                         }
                     }
@@ -69,7 +117,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply') {
+        stage('Terraform Apply (Final Infra)') {
             steps {
                 withEnv([
                     "ARM_CLIENT_ID=${env.ARM_CLIENT_ID}",
@@ -95,7 +143,7 @@ pipeline {
 
         stage('Confirm Destroy') {
             when {
-                expression { params.DESTROY }
+                expression { params.DESTROY == true }
             }
             steps {
                 input message: 'Are you sure you want to destroy the infrastructure?', ok: 'Destroy'
@@ -104,7 +152,7 @@ pipeline {
 
         stage('Terraform Destroy') {
             when {
-                expression { params.DESTROY }
+                expression { params.DESTROY == true }
             }
             steps {
                 withEnv([
