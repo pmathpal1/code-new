@@ -1,3 +1,7 @@
+terraform {
+  backend "azurerm" {}
+}
+
 # Storage Account
 resource "azurerm_storage_account" "sa" {
   name                     = var.storage_account_name
