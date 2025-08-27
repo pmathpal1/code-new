@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        ARM_TENANT_ID       = credentials('AZURE_TENANT_ID')
+        ARM_TENANT_ID = credentials('AZURE_TENANT_ID')
         ARM_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
-        ARM_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
-        ARM_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
+        ARM_CLIENT_ID = credentials('AZURE_CLIENT_ID')
+        ARM_CLIENT_SECRET = credentials('AZURE_CLIENT_SECRET')
     }
 
     parameters {
@@ -26,23 +26,6 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply Backend Infrastructure') {
-            steps {
-                script {
-                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
-                        sh """
-                        terraform apply \
-                          -var="location=${params.LOCATION}" \
-                          -var="rg_name=${params.RG_NAME}" \
-                          -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
-                          -var="container_name=${params.CONTAINER_NAME}" \
-                          -auto-approve
-                        """
-                    }
-                }
-            }
-        }
-
         stage('Terraform Re-init with Remote Backend') {
             steps {
                 script {
@@ -54,6 +37,23 @@ pipeline {
                           -backend-config="container_name=${params.CONTAINER_NAME}" \
                           -backend-config="key=terraform.tfstate" \
                           -reconfigure
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply Backend Infrastructure') {
+            steps {
+                script {
+                    docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
+                        sh """
+                        terraform apply \
+                          -var="location=${params.LOCATION}" \
+                          -var="rg_name=${params.RG_NAME}" \
+                          -var="storage_account_name=${params.STORAGE_ACCOUNT_NAME}" \
+                          -var="container_name=${params.CONTAINER_NAME}" \
+                          -auto-approve
                         """
                     }
                 }
