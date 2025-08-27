@@ -14,6 +14,7 @@ subnet = [
   { name = "spoke1-vnet", subnet_name = "spoke1-subnet", address_prefix = "20.0.0.0/24" },
   { name = "spoke2-vnet", subnet_name = "spoke2-subnet", address_prefix = "30.0.0.0/24" },
   { name = "hub-vnet", subnet_name = "AzureFirewallSubnet", address_prefix = "10.0.0.0/24" },
+  { name = "hub-vnet", subnet_name = "AzureFirewallSubnet", address_prefix = "10.0.0.0/24" },
   { name = "hub-vnet", subnet_name = "AzureFirewallSubnet", address_prefix = "10.0.0.0/24" }
 ]
 
