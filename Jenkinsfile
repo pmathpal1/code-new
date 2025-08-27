@@ -16,7 +16,7 @@ pipeline {
     }
 
     stages {
-        stage('Terraform Init (Local, no backend)') {
+        stage('Terraform Init without backend') {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Re-init with Remote Backend') {
+        stage('Terraform Re-init with Backend') {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
@@ -76,7 +76,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply (Final Infra)') {
+        stage('Terraform Apply Final Infra') {
             steps {
                 script {
                     docker.image('hashicorp/terraform:latest').inside('--entrypoint=""') {
